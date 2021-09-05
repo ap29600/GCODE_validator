@@ -44,10 +44,13 @@ digraph G {
     Scan [ label = "Scansione istruzioni\nillegali" ];
     Sym [ label = "Simulazione percorso\ne controllo limiti\ndella macchina" ];
     WhtLst [ label = "Parsing whitelist\ndell' utente|Deduzione da\nGCODE affidabile" ];
+    Machine [label = "Costruzione di un\nprofilo macchina" ]
     Gen [ label = "Generazione file whitelist\nda quella in memoria"]
 
-    Src -> Clean -> Parse -> Scan -> Sym;
-    WhtLst -> Scan;
-    WhtLst -> Gen [style = "dotted"];
+    Src -> Clean -> Parse -> Machine 
+    WhtLst -> Machine
+    WhtLst -> Gen [style = "dotted"]
+    Machine -> Scan
+    Machine -> Sym
 }
 ```
