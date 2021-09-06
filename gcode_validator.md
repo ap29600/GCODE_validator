@@ -54,3 +54,43 @@ digraph G {
     Machine -> Sym
 }
 ```
+
+## Controlli di simulazione
+
+Durante il controllo dinamico del GCODE, il programma controlla le seguenti
+condizioni:
+
+- Legalità delle istruzioni.
+- Compatibilità dei movimenti con la geometria della macchina.
+- Assenza di collisione del carrello con elementi stampati.
+- Settaggio della temperatura dell'estrusore in valori consentiti.
+- Conformità del rapporto tra distanza percorsa e plastica estrusa.
+
+Per effettuare questi controlli l'interfaccia può presentare le seguenti componenti:
+
+```cpp
+
+class Validator { /* .. */ };
+
+// a and b are antipodal vertices of the box.
+typedef struct {
+    Vec3 a, b;
+} Box;
+
+typedef struct {
+    Box  limits;
+    Vec3 position;
+    Vec3 zero_pos;
+} Extruder;
+
+class Machine {
+public:
+    Machine();
+    enum MachineResult consume_instruction(Instruction); 
+private:
+    std::Vec<Extruder> extruders;
+    std::Vec<Box>      extruded;   
+    Validator          validator;
+};
+
+```
