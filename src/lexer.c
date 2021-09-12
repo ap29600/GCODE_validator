@@ -57,11 +57,3 @@ string_view next_token(string_view *mem_file) {
   return token;
 }
 
-int main() {
-  FILE * f = fopen("in.gcode", "r");
-  string_view sv_file = sv_slurp_stream(f);
-  string_view token;
-  while ((token = next_token(&sv_file)).len > 0) {
-    // printf(">>> " SV_FMT "\n", SV_ARG(token));
-  }
-}
