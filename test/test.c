@@ -29,7 +29,7 @@ void parses_correctly() {
 
   string_view sv_file = sv_slurp_stream(f);
 
-  for (int i = 0; i <sizeof(tokens) / sizeof(tokens[0]) - 1; i++) {
+  for (int i = 0; i <sizeof(tokens) / sizeof(tokens[0]); i++) {
     string_view token = next_token(&sv_file);
     ASSERT(!sv_cmp(token, tokens[i]))
   }
