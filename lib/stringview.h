@@ -13,12 +13,6 @@
 
 #define SV_FMT "%.*s"
 #define SV_ARG(sv) (int)(sv).len, (sv).data
-#define MIN(a, b)                                                              \
-  ({                                                                            \
-    __auto_type A = (a);                                                       \
-    __auto_type B = (b);                                                       \
-    A < B ? A : B;                                                             \
-  })
 
 /////////////////////////////////////////////////////////////
 
@@ -47,10 +41,15 @@ string_view sv_from_str(const char *data) {
 }
 
 string_view sv_from_nstr(const char *data, size_t len) {
-  return (string_view){.len = MIN(strlen(data), len), .data = data};
+  size_t data_len = strlen(data);
+  if (data_len < len)
+    len = data_len;
+  return (string_view){.len = len, .data = data};
 }
 
 string_view sv_trim(string_view sv) {
+  if (!sv.data)
+    return sv;
   while (isspace(sv.data[0]) && sv.len > 0) {
     sv.data++;
     sv.len--;

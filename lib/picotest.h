@@ -9,29 +9,30 @@
 
 #define FMT(X)                                                                 \
   printf(_Generic((X), int                                                     \
-                  : "%d", float                                                \
-                  : "%f", double                                               \
-                  : "%g", char                                                 \
-                  : "%c", unsigned long                                        \
-                  : "%lu"),                                                    \
+                  : "(int)%d", float                                           \
+                  : "(float)%f", double                                        \
+                  : "(double)%g", char                                         \
+                  : "(char)%c", unsigned long                                  \
+                  : "(unsigned long)%lu"),                                     \
          X)
 
 #define ASSERT_EQ(X, Y)                                                        \
   {                                                                            \
-    typeof(X) x = X;                                                           \
-    typeof(Y) y = Y;                                                           \
+    __typeof__(X) x = (X);                                                     \
+    __typeof__(Y) y = (Y);                                                     \
     assertions++;                                                              \
     if (x == y)                                                                \
       success++;                                                               \
     else {                                                                     \
       if (assertions - success == 1)                                           \
         printf("\n");                                                          \
-      printf("\t" RED "ASSERTION FAILED: " GRY "( " DEF #X GRY                 \
-             " ) == ( " DEF #Y GRY " )\n");                                \
-      printf("\t\tLHS: "DEF);                                                    \
+      printf("\t" RED "ASSERTION %d FAILED: " GRY "( " DEF #X GRY              \
+             " ) == ( " DEF #Y GRY " )\n",                                     \
+             assertions);                                                      \
+      printf("\t\tLHS: " DEF);                                                 \
       FMT(x);                                                                  \
       printf("\n");                                                            \
-      printf(GRY "\t\tRHS: " DEF );                                                    \
+      printf(GRY "\t\tRHS: " DEF);                                             \
       FMT(y);                                                                  \
       printf("\n");                                                            \
     }                                                                          \
@@ -59,4 +60,3 @@
 #define INIT                                                                   \
   int assertions = 0, success = 0;                                             \
   printf(GRN "TEST \"%s\":" DEF, __func__);
-
