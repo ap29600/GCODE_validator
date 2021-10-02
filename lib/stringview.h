@@ -28,6 +28,7 @@ string_view sv_trim(string_view sv);
 string_view sv_split(string_view *sv, char delim);
 string_view sv_split_predicate(string_view *sv, int pred(int));
 string_view sv_split_escaped(string_view *sv, char delim);
+string_view sv_split_any(string_view *sv, const char *delims);
 int sv_len_utf_8(string_view s);
 int sv_cmp(string_view a, string_view b);
 int sv_starts_with(string_view a, char *b);
@@ -169,6 +170,32 @@ int sv_len_utf_8(string_view s) {
     if (((*s.data++) & 0xc0) != 0x80)
       ret++;
   return ret;
+}
+
+string_view sv_split_any(string_view *sv, const char *delims) {
+  const char *data = sv->data;
+  size_t len;
+
+  while (sv->len > 0) {
+    for (size_t i = 0; delims[i]; i++)
+      if (sv->data[0] == delims[i])
+        goto FOUND;
+    sv->data++;
+    sv->len--;
+  }
+FOUND:
+
+  len = sv->data - data;
+
+  if (sv->len > 0) { // get rid of the delimiter
+    sv->data++;
+    sv->len--;
+  } else
+    // if delimiter is not found, the rest of the line
+    // should be an invalid string_view
+    sv->data = NULL;
+
+  return (string_view){.len = len, .data = data};
 }
 
 #undef STRINGVIEW_IMPLEMENTATION
