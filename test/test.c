@@ -122,7 +122,7 @@ void whitelist_generation() {
 
   cmdlist l = build_whitelist(sv);
   char list_str[1024];
-  dump_whitelist(l, list_str);
+  dump_whitelist(l, list_str, 1024);
   ASSERT_EQ(sv_from_str(list_str), sv_from_str(expected_whitelist));
   REPORT;
 }
@@ -131,4 +131,5 @@ int main() {
   tokenize_file();
   token_decoding();
   whitelist_generation();
+
 }

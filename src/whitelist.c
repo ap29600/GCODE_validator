@@ -26,20 +26,25 @@ static long int insert(cmdlist *result, list_entry e) {
     return pos;
 }
 
-void dump_whitelist(cmdlist whitelist, char *str) {
+
+void dump_whitelist(cmdlist whitelist, char *str, size_t max_size) {
+    size_t remaining = max_size;
     for(size_t i = 0; i < whitelist.size; i++) {
-        size_t offset = sprintf(str, "%c%g:", 
-                enum_to_char_variant((whitelist.data[i].id / 2000U) ^ CMD),
-                (whitelist.data[i].id % 2000) / 2.0); 
+        Command cmd = id_to_cmd(whitelist.data[i].id);
+        size_t offset = snprintf(str, remaining, "%c%g:", 
+                enum_to_char_variant(cmd.variant), cmd.value);
         str += offset;
+        remaining -= offset;
         for(size_t j = 0; j < 8 * sizeof(whitelist.data->subcommands); j++) {
             if ((whitelist.data[i].subcommands >> j) & 1) {
-                offset = sprintf(str, " %c", enum_to_char_variant(SUBCMD | j));
+                offset = snprintf(str, remaining," %c", enum_to_char_variant(SUBCMD | j));
                 str += offset;
+                remaining -= offset;
             }
         }
-        offset = sprintf(str, "\n");
+        offset = snprintf(str, remaining,"\n");
         str += offset;
+        remaining -= offset;
     }
 }
 
@@ -66,19 +71,19 @@ cmdlist build_whitelist(string_view source) {
 
             list_entry e = {.id = id};
             list_entry *matching_entry = 
-                bsearch(&e, result.data, result.size, sizeof(list_entry),cmp_ids);
+                bsearch(&e, result.data, result.size, sizeof(list_entry), cmp_ids);
 
-            if (!matching_entry)
-                current_cmd_index = insert(&result, e);
-            else 
+            if (matching_entry)
                 current_cmd_index = matching_entry - result.data;
+            else 
+                current_cmd_index = insert(&result, e);
         } else /* SUBCMD */{
             if (current_cmd_index < 0) {
                 fprintf(stderr, "ERROR: option with no preceding command at %zu:%zu\n",
                         cmd.pos.row, cmd.pos.col);
                 exit(1);
             } else {
-                result.data[current_cmd_index].subcommands |= (1 << (cmd.variant & VAL_MASK));
+                result.data[current_cmd_index].subcommands |= (1 << (cmd.variant ^ SUBCMD));
             }
         }
     }

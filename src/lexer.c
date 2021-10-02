@@ -38,43 +38,14 @@ Token next_token(string_view *mem_file) {
 }
 
 char enum_to_char_variant(unsigned variant) {
-  switch (variant) {
-    case CMD_G: return 'G';
-    case CMD_M: return 'M';
-    case CMD_T: return 'T';
-    case CMD_N: return 'N';
-    case CMD_D: return 'D';
-    case SUBCMD_S: return 'S';
-    case SUBCMD_X: return 'X';
-    case SUBCMD_Y: return 'Y';
-    case SUBCMD_Z: return 'Z';
-    case SUBCMD_I: return 'I';
-    case SUBCMD_R: return 'R';
-    case SUBCMD_P: return 'P';
-    case SUBCMD_E: return 'E';
-    case SUBCMD_F: return 'F';
-    default: return 0;
-  }
+  return enum_to_char_lookup[(variant & VAL_MASK) + 10 * ((variant & SUBCMD) > 0)];
 }
 
 unsigned char_variant_to_enum(char c) {
-  switch (c) {
-    case 'G': return CMD_G;
-    case 'M': return CMD_M;
-    case 'T': return CMD_T;
-    case 'N': return CMD_N;
-    case 'D': return CMD_D;
-    case 'S': return SUBCMD_S;
-    case 'X': return SUBCMD_X;
-    case 'Y': return SUBCMD_Y;
-    case 'Z': return SUBCMD_Z;
-    case 'I': return SUBCMD_I;
-    case 'R': return SUBCMD_R;
-    case 'P': return SUBCMD_P;
-    case 'E': return SUBCMD_E;
-    case 'F': return SUBCMD_F;
-    default: return INVALID_VARIANT;
-  }
+
+    return ('A'<=c && 'Z'>=c && char_to_enum_lookup[c - 'A']) 
+        ? char_to_enum_lookup[c - 'A'] 
+        : INVALID_VARIANT; 
 }
 
 Command next_command(string_view *mem_file) {
