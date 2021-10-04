@@ -27,7 +27,11 @@ typedef struct {
 #define CMD (1U << 30)
 #define CMD_G (CMD | 0U)
 #define CMD_M (CMD | 1U)
-#define CMD_T (CMD | 2U)
+
+// the toplevel T command for tool change conflicts with the T option of the M204
+// command. Figure out a way to distinguish between the two.
+// #define CMD_T (CMD | 2U) 
+
 #define CMD_N (CMD | 3U)
 #define CMD_D (CMD | 4U)
 
@@ -42,12 +46,14 @@ typedef struct {
 #define SUBCMD_E (SUBCMD | 7U)
 #define SUBCMD_F (SUBCMD | 8U)
 
+#define SUBCMD_T (SUBCMD | 9U)
+
 #define VAL_MASK (~(SUBCMD | CMD))
 
 static const char enum_to_char_lookup[26] = {
     [CMD_G & VAL_MASK] = 'G',
     [CMD_M & VAL_MASK] = 'M',
-    [CMD_T & VAL_MASK] = 'T',
+//     [CMD_T & VAL_MASK] = 'T',
     [CMD_N & VAL_MASK] = 'N',
     [CMD_D & VAL_MASK] = 'D',
     [(SUBCMD_S & VAL_MASK) + 10 ] = 'S',
@@ -58,13 +64,14 @@ static const char enum_to_char_lookup[26] = {
     [(SUBCMD_R & VAL_MASK) + 10 ] = 'R',
     [(SUBCMD_P & VAL_MASK) + 10 ] = 'P',
     [(SUBCMD_E & VAL_MASK) + 10 ] = 'E',
-    [(SUBCMD_F & VAL_MASK) + 10 ] = 'F'
+    [(SUBCMD_F & VAL_MASK) + 10 ] = 'F',
+    [(SUBCMD_T & VAL_MASK) + 10 ] = 'T',
 };
 
 static const unsigned char_to_enum_lookup[26] = {
     ['G'-'A'] = CMD_G,
     ['M'-'A'] = CMD_M,
-    ['T'-'A'] = CMD_T,
+    //['T'-'A'] = CMD_T,
     ['N'-'A'] = CMD_N,
     ['D'-'A'] = CMD_D,
     ['S'-'A'] = SUBCMD_S,
@@ -75,7 +82,8 @@ static const unsigned char_to_enum_lookup[26] = {
     ['R'-'A'] = SUBCMD_R,
     ['P'-'A'] = SUBCMD_P,
     ['E'-'A'] = SUBCMD_E,
-    ['F'-'A'] = SUBCMD_F 
+    ['F'-'A'] = SUBCMD_F,
+    ['T'-'A'] = SUBCMD_T,
 };
 
 
