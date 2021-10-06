@@ -11,85 +11,106 @@ typedef struct {
 typedef struct {
   string_view sv;
   file_pos pos;
+  int is_first;
 } Token;
 
+
+typedef enum {
+    STREAM_END,      // the last token was already parsed.
+    INVALID_VARIANT, // the token starts with an invalid character.
+    LONG_LITERAL,    // the double literal overflows the token.
+    SHORT_LITERAL,   // the double literal ends before the token does.
+} err_name;
+
+typedef enum {
+    CMD_G = 0, 
+    CMD_M, 
+    CMD_T, 
+    CMD_N, 
+    CMD_D,
+} cmd_name;
+
+typedef enum {
+    SUBCMD_S = 0, 
+    SUBCMD_X, 
+    SUBCMD_Y, 
+    SUBCMD_Z, 
+    SUBCMD_I,
+    SUBCMD_R,
+    SUBCMD_P,
+    SUBCMD_E,
+    SUBCMD_F,
+    SUBCMD_T,
+} subcmd_name;
+
+#define ERR 0
+#define CMD 1
+#define SUBCMD 2
+
 typedef struct {
-  unsigned variant;
+    unsigned kind : 2;
+    unsigned name : 30;
+} cmd_type;
+
+typedef struct {
+  cmd_type variant;
   double value;
   file_pos pos;
 } Command;
 
-#define STREAM_END      0 // the last token was already parsed.
-#define INVALID_VARIANT 1 // the token starts with an invalid character.
-#define LONG_LITERAL    2 // the double literal overflows the token.
-#define SHORT_LITERAL   3 // the double literal ends before the token does.
-
-#define CMD (1U << 30)
-#define CMD_G (CMD | 0U)
-#define CMD_M (CMD | 1U)
-
-// the toplevel T command for tool change conflicts with the T option of the M204
-// command. Figure out a way to distinguish between the two.
-// #define CMD_T (CMD | 2U) 
-
-#define CMD_N (CMD | 3U)
-#define CMD_D (CMD | 4U)
-
-#define SUBCMD (1U << 31)
-#define SUBCMD_S (SUBCMD | 0U)
-#define SUBCMD_X (SUBCMD | 1U)
-#define SUBCMD_Y (SUBCMD | 2U)
-#define SUBCMD_Z (SUBCMD | 3U)
-#define SUBCMD_I (SUBCMD | 4U)
-#define SUBCMD_R (SUBCMD | 5U)
-#define SUBCMD_P (SUBCMD | 6U)
-#define SUBCMD_E (SUBCMD | 7U)
-#define SUBCMD_F (SUBCMD | 8U)
-
-#define SUBCMD_T (SUBCMD | 9U)
-
-#define VAL_MASK (~(SUBCMD | CMD))
-
-static const char enum_to_char_lookup[26] = {
-    [CMD_G & VAL_MASK] = 'G',
-    [CMD_M & VAL_MASK] = 'M',
-//     [CMD_T & VAL_MASK] = 'T',
-    [CMD_N & VAL_MASK] = 'N',
-    [CMD_D & VAL_MASK] = 'D',
-    [(SUBCMD_S & VAL_MASK) + 10 ] = 'S',
-    [(SUBCMD_X & VAL_MASK) + 10 ] = 'X',
-    [(SUBCMD_Y & VAL_MASK) + 10 ] = 'Y',
-    [(SUBCMD_Z & VAL_MASK) + 10 ] = 'Z',
-    [(SUBCMD_I & VAL_MASK) + 10 ] = 'I',
-    [(SUBCMD_R & VAL_MASK) + 10 ] = 'R',
-    [(SUBCMD_P & VAL_MASK) + 10 ] = 'P',
-    [(SUBCMD_E & VAL_MASK) + 10 ] = 'E',
-    [(SUBCMD_F & VAL_MASK) + 10 ] = 'F',
-    [(SUBCMD_T & VAL_MASK) + 10 ] = 'T',
+static const char cmd_to_char_table[] = {
+    [CMD_G] = 'G',
+    [CMD_M] = 'M',
+    [CMD_T] = 'T',
+    [CMD_N] = 'N',
+    [CMD_D] = 'D',
 };
 
-static const unsigned char_to_enum_lookup[26] = {
-    ['G'-'A'] = CMD_G,
-    ['M'-'A'] = CMD_M,
-    //['T'-'A'] = CMD_T,
-    ['N'-'A'] = CMD_N,
-    ['D'-'A'] = CMD_D,
-    ['S'-'A'] = SUBCMD_S,
-    ['X'-'A'] = SUBCMD_X,
-    ['Y'-'A'] = SUBCMD_Y,
-    ['Z'-'A'] = SUBCMD_Z,
-    ['I'-'A'] = SUBCMD_I,
-    ['R'-'A'] = SUBCMD_R,
-    ['P'-'A'] = SUBCMD_P,
-    ['E'-'A'] = SUBCMD_E,
-    ['F'-'A'] = SUBCMD_F,
-    ['T'-'A'] = SUBCMD_T,
+static const char subcmd_to_char_table[] = {
+    [SUBCMD_S] = 'S',
+    [SUBCMD_X] = 'X',
+    [SUBCMD_Y] = 'Y',
+    [SUBCMD_Z] = 'Z',
+    [SUBCMD_I] = 'I',
+    [SUBCMD_R] = 'R',
+    [SUBCMD_P] = 'P',
+    [SUBCMD_E] = 'E',
+    [SUBCMD_F] = 'F',
+    [SUBCMD_T] = 'T',
+};
+
+static const cmd_type char_to_cmd_table[] = {
+    ['G'-'A'] = {CMD, CMD_G},
+    ['M'-'A'] = {CMD, CMD_M},
+    ['T'-'A'] = {CMD, CMD_T},
+    ['N'-'A'] = {CMD, CMD_N},
+    ['D'-'A'] = {CMD, CMD_D},
+};
+
+static const cmd_type char_to_subcmd_table[] = {
+    ['S'-'A'] = {SUBCMD, SUBCMD_S},
+    ['X'-'A'] = {SUBCMD, SUBCMD_X},
+    ['Y'-'A'] = {SUBCMD, SUBCMD_Y},
+    ['Z'-'A'] = {SUBCMD, SUBCMD_Z},
+    ['I'-'A'] = {SUBCMD, SUBCMD_I},
+    ['R'-'A'] = {SUBCMD, SUBCMD_R},
+    ['P'-'A'] = {SUBCMD, SUBCMD_P},
+    ['E'-'A'] = {SUBCMD, SUBCMD_E},
+    ['F'-'A'] = {SUBCMD, SUBCMD_F},
+    ['T'-'A'] = {SUBCMD, SUBCMD_T},
 };
 
 
 Token next_token(string_view *mem_file);
 Command next_command(string_view *mem_file);
-char enum_to_char_variant(unsigned);
-unsigned char_variant_to_enum(char);
 
+cmd_type char_to_cmd(char);
+cmd_type char_to_subcmd(char);
+
+
+char cmd_to_char(cmd_type);
+
+inline char enum_to_char_variant(cmd_type variant) {
+    return cmd_to_char(variant);
+}
 #endif

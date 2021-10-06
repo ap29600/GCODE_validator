@@ -17,13 +17,18 @@ typedef struct {
 cmdlist build_whitelist(string_view whitelist);
 int cmp_ids(const void *a, const void *b); // useful for bsearch
 
+
+#define ID_OF(V, F) ((V) << 16 | ((int)((F) * 10.0) & 0xffff))
+
 static inline unsigned cmd_to_id(Command cmd) {
-  return ((cmd.variant & VAL_MASK) << 16) | ((int)(cmd.value * 10) & 0xffff);
+  return ((cmd.variant.name) << 16) | ((int)(cmd.value * 10) & 0xffff);
 }
+
 
 static inline Command id_to_cmd(unsigned u) {
   return (Command){
-      .variant = (u >> 16) | CMD,
+      // only CMDs have a valid ID.
+      .variant = {CMD, u >> 16},
       .value = (double)(u & 0xffff) / 10.0,
        // A command obtained in this way 
        // doesn't have a file position
