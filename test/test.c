@@ -17,7 +17,7 @@ const char gcode_buf[] =
     "M109 S235 ; set temperature and wait for it to be reached\n"
     "G21 ; set units to millimeters\n"
     "G90 ; use absolute coordinates\n"
-    "M83 ; use absolute distances for extrusion\n"
+    "M82 ; use absolute distances for extrusion\n"
     "G92 E0\n"
     "; Filament gcode\n"
     "G1 Z0.350 F7800.000\n"
