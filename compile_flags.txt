@@ -1,0 +1,3 @@
+-xc
+-Wno-c99-designator
+--std=c11
